@@ -1,7 +1,7 @@
 (function(exports){
     function TabObject(tabid, tabconfig){
         this.id = tabid;
-        this.config = JSON.parse(JSON.stringify(tabconfig));
+        this.config = tabconfig;
         this.items = [];
     }
     TabObject.prototype = {
@@ -16,7 +16,7 @@
 
     function ItemObject(itemconfig){
         this.id = itemconfig.id;
-        this.config = JSON.parse(JSON.stringify(itemconfig));
+        this.config = itemconfig;
     }
     ItemObject.prototype = {
         getJQ: function(){
