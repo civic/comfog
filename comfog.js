@@ -1,7 +1,7 @@
 (function(exports){
     function TabObject(tabid, tabconfig){
         this.id = tabid;
-        this.config = $.extend(tabconfig);
+        this.config = JSON.parse(JSON.stringify(tabconfig));
         this.items = [];
     }
     TabObject.prototype = {
@@ -16,7 +16,7 @@
 
     function ItemObject(itemconfig){
         this.id = itemconfig.id;
-        this.config = $.extend(itemconfig);
+        this.config = JSON.parse(JSON.stringify(itemconfig));
     }
     ItemObject.prototype = {
         getJQ: function(){
@@ -98,6 +98,7 @@
                 });
             });
             $("#tabs").tabs();
+            return that;
 
         }
         that.setup = setup;
