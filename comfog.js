@@ -10,8 +10,10 @@
         },
         addItem: function(item){
             this.items.push(item);
+        },
+        getItem: function(key){
+            return this.items[key];
         }
-        
     };
 
     function ItemObject(itemconfig){
@@ -35,16 +37,12 @@
             } else {
                 return;
             }
+            form.attr("id", this.config.id);
             if (fconf.size){
                 form.attr("size", fconf.size);
             }
             if (fconf.label){
                 form.text(fconf.label);
-            }
-            if (fconf.listeners){
-                $.each(fconf.listeners, function(key, value){
-                    form.on(key, value);
-                });
             }
             return form;
         }
@@ -53,7 +51,7 @@
 
     var comfog = function(config){
         var that = {
-            tabs: {},
+            tabs: [],
         };
 
         function setup(selector){
@@ -77,7 +75,7 @@
                 $('<div id="'+tabid+'"/>').appendTo("#tabs-inner");
 
                 var tab =new TabObject(tabid, tabconfig);
-                that.tabs[tabid] = tab;
+                that.tabs[idx] = tab;
                 var tabJQ = tab.getJQ();
 
                 if (!tabconfig.items){
@@ -88,7 +86,7 @@
                     var itemObj =new ItemObject(itemconfig); 
                     tab.addItem(itemObj);
 
-                    var cont = $('<div id="'+itemconfig.id+'_cont"/>').append(
+                    var cont = $('<div id="'+itemconfig.id+'_cont" class="comfog_item_cont"/>').append(
                         $('<label for="'+itemconfig.id+'">').text(itemconfig.label)
                     );
                     if (itemconfig.form){
