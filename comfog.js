@@ -1,8 +1,9 @@
 (function(exports){
     function TabObject(tabid, tabconfig){
         this.id = tabid;
-        this.config = tabconfig;
+        this.config = $.extend(tabconfig);
         this.items = [];
+        this.itemMap = {};
     }
     TabObject.prototype = {
         getJQ: function(){
@@ -10,15 +11,17 @@
         },
         addItem: function(item){
             this.items.push(item);
+            this.itemMap[item.id] = item;
         },
         getItem: function(key){
-            return this.items[key];
+            return this.itemMap[key];
         }
     };
 
     function ItemObject(itemconfig){
         this.id = itemconfig.id;
-        this.config = itemconfig;
+        this.formid = itemconfig.id + "_fm";
+        this.config = $.extend(itemconfig);
     }
     ItemObject.prototype = {
         getJQ: function(){
@@ -26,6 +29,9 @@
         },
         getValue: function(){
             return $("#"+this.formid).val();
+        },
+        getForm: function(){
+            return $("#"+this.formid);
         },
         createForm: function(){
             var fconf = this.config.form;
@@ -37,12 +43,17 @@
             } else {
                 return;
             }
-            form.attr("id", this.config.id);
+            form.attr("id", this.formid);
             if (fconf.size){
                 form.attr("size", fconf.size);
             }
             if (fconf.label){
                 form.text(fconf.label);
+            }
+            if (fconf.listeners){
+                $.each(fconf.listeners, function(event_name, func){
+                    form.on(event_name, func);
+                });
             }
             return form;
         }
@@ -86,8 +97,8 @@
                     var itemObj =new ItemObject(itemconfig); 
                     tab.addItem(itemObj);
 
-                    var cont = $('<div id="'+itemconfig.id+'_cont" class="comfog_item_cont"/>').append(
-                        $('<label for="'+itemconfig.id+'">').text(itemconfig.label)
+                    var cont = $('<div id="'+itemObj.id+'" class="comfog_item_cont"/>').append(
+                        $('<label for="'+itemObj.formid+'">').text(itemconfig.label)
                     );
                     if (itemconfig.form){
                         cont.append(itemObj.createForm());
