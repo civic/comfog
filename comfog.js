@@ -8,9 +8,6 @@
         getJQ: function(){
             return $("#"+this.id);
         },
-        getForm: function(){
-            return $("#"+this.id + " form");
-        },
         addItem: function(item){
             this.items.push(item);
         },
@@ -35,6 +32,9 @@
         getJQ: function(){
             return $("#"+this.id);
         },
+        getValue: function(){
+            return $("#"+this.compid).val();
+        },
         getComp: function(){
             return $("#"+this.compid);
         },
@@ -44,7 +44,7 @@
             if (cconf.type == "text"){
                 comp = $('<input type="text"/>');
             } else if (cconf.type == "button"){
-                comp = $('<button></button>');
+                comp = $('<a class="btn"></a>');
             } else {
                 return;
             }
@@ -89,12 +89,11 @@
                 ).appendTo(nav);
 
                 //tab body
-                $('<div id="'+tabid+'" class="tab-pane" />').appendTo(content);
+                $('<div id="'+tabid+'" class="tab-pane " />').appendTo(content);
 
                 var tab =new TabObject(tabid, tabconfig);
                 that.tabs[idx] = tab;
                 var tabJQ = tab.getJQ();
-                var tabForm = $("<form />").appendTo(tabJQ);
 
                 if (!tabconfig.items){
                     return;
@@ -104,13 +103,16 @@
                     var itemObj =new ItemObject(itemconfig); 
                     tab.addItem(itemObj);
 
+                    var itemJQ = $('<div id="'+itemObj.id +'" class="span12" />');
+
                     if (itemconfig.label){
-                        var label = $('<label for="'+itemObj.compid+'">').text(itemconfig.label);
-                        tabForm.append(label);
+                        var label = $('<label >').text(itemconfig.label);
+                        itemJQ.append(label);
                     }
                     if (itemconfig.comp){
-                        tabForm.append(itemObj.createComp());
+                        itemJQ.append(itemObj.createComp());
                     }
+                    tabJQ.append(itemJQ);
                 });
             });
             $("a:first", nav).tab("show");
