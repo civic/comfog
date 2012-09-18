@@ -1,4 +1,6 @@
 (function(exports){
+    exports.comfog = {};
+
     function TabObject(tabid, tabconfig){
         this.id = tabid;
         this.config = $.extend(tabconfig);
@@ -45,15 +47,39 @@
                 comp = $('<input type="text"/>');
             } else if (cconf.type == "button"){
                 comp = $('<a class="btn"></a>');
+            } else if (cconf.type == "number"){
+                comp = $('<input type="number">');
+                if (cconf.hasOwnProperty("max")){
+                    comp.attr("max", cconf.max);
+                }
+                if (cconf.hasOwnProperty("min")){
+                    comp.attr("min", cconf.min);
+                }
+            } else if (cconf.type == "checkbox"){
+                comp = $('<input type="checkbox">');
+                if (!cconf.hasOwnProperty("def")){
+                    comp.val("true");
+                }
+                var prnt = $('<label class="checkbox"/>');
+                if (cconf.hasOwnProperty("label")){
+                    prnt.text(cconf.label);
+                }
+                comp.appendTo(prnt);
             } else {
                 return;
             }
             comp.attr("id", this.compid);
-            if (cconf.size){
+            if (cconf.hasOwnProperty("size")){
                 comp.attr("size", cconf.size);
             }
-            if (cconf.label){
+            if (cconf.hasOwnProperty("label")){
                 comp.text(cconf.label);
+            }
+            if (cconf.hasOwnProperty("readonly") && cconf.readonly){
+                comp.attr("readonly", "readonly");
+            }
+            if (cconf.hasOwnProperty("def")){
+                comp.val(cconf.def);
             }
             if (cconf.listeners){
                 $.each(cconf.listeners, function(event_name, func){
@@ -65,65 +91,64 @@
 
     }
 
-    var comfog = function(config){
+    function setup(config){
         var that = {
             tabs: [],
         };
 
-        function setup(selector){
-            selector = selector || "#comfog-container";
-            var cont = $(selector);
+        var selector = config.selector || "#comfog-container";
+        var cont = $(selector);
 
-            var tabOwner = $('<div id="comfog-tab-owner" class=""/>');
-            var nav = $('<ul id="comfog-nav" class="nav nav-tabs"/>');
-            var content = $('<div id="comfog-content" class="tab-content"/>');
+        var tabOwner = $('<div id="comfog-tab-owner" class=""/>');
+        var nav = $('<ul id="comfog-nav" class="nav nav-tabs"/>');
+        var content = $('<div id="comfog-content" class="tab-content"/>');
 
-            cont.append(tabOwner.append(nav).append(content));
+        cont.append(tabOwner.append(nav).append(content));
 
-            $.each(config.tabs, function(idx, tabconfig){
-                var tabid = tabconfig.id || ""+idx;
-                tabid = "comfog-tab-"+tabid;
-                //tab index
-                $('<li/>').append(
-                    $('<a href="#'+tabid+'" data-toggle="tab"/>').text(tabconfig.label)
-                ).appendTo(nav);
+        $.each(config.tabs, function(idx, tabconfig){
+            var tabid = tabconfig.id || ""+idx;
+            tabid = "comfog-tab-"+tabid;
+            //tab index
+            $('<li/>').append(
+                $('<a href="#'+tabid+'" data-toggle="tab"/>').text(tabconfig.label)
+            ).appendTo(nav);
 
-                //tab body
-                $('<div id="'+tabid+'" class="tab-pane " />').appendTo(content);
+            //tab body
+            $('<div id="'+tabid+'" class="tab-pane " />').appendTo(content);
 
-                var tab =new TabObject(tabid, tabconfig);
-                that.tabs[idx] = tab;
-                var tabJQ = tab.getJQ();
+            var tab =new TabObject(tabid, tabconfig);
+            that.tabs[idx] = tab;
+            var tabJQ = tab.getJQ();
 
-                if (!tabconfig.items){
-                    return;
+            if (!tabconfig.items){
+                return;
+            }
+            //tab items
+            $.each(tabconfig.items, function(idx2, itemconfig){
+                var itemObj =new ItemObject(itemconfig); 
+                tab.addItem(itemObj);
+
+                var itemJQ = $('<div id="'+itemObj.id +'" class="span12" />');
+
+                if (itemconfig.label){
+                    var label = $('<label >').text(itemconfig.label);
+                    itemJQ.append(label);
                 }
-                //tab items
-                $.each(tabconfig.items, function(idx2, itemconfig){
-                    var itemObj =new ItemObject(itemconfig); 
-                    tab.addItem(itemObj);
-
-                    var itemJQ = $('<div id="'+itemObj.id +'" class="span12" />');
-
-                    if (itemconfig.label){
-                        var label = $('<label >').text(itemconfig.label);
-                        itemJQ.append(label);
+                if (itemconfig.comp){
+                    var comp = itemObj.createComp();
+                    if (comp.parent().length > 0){
+                        itemJQ.append(comp.parent());
+                    } else {
+                        itemJQ.append(comp);
                     }
-                    if (itemconfig.comp){
-                        itemJQ.append(itemObj.createComp());
-                    }
-                    tabJQ.append(itemJQ);
-                });
+                }
+                tabJQ.append(itemJQ);
             });
-            $("a:first", nav).tab("show");
-            return that;
-
-        }
-        that.setup = setup;
-        
-
+        });
+        $("a:first", nav).tab("show");
         return that;
+
     }
-    exports.comfog = comfog;
+    exports.comfog.setup = setup;
 })(this);
 
