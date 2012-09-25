@@ -40,11 +40,13 @@
         getComp: function(){
             return $("#"+this.compid);
         },
-        createComp: function(){
-            var cconf = this.config.comp;
+        createComp: function(config){
+            var cconf = config || this.config.comp;
             var comp;
             if (cconf.type == "text"){
                 comp = $('<input type="text"/>');
+            } else if (cconf.type == "hidden"){
+                comp = $('<input type="hidden"/>');
             } else if (cconf.type == "button"){
                 comp = $('<a class="btn"></a>');
             } else if (cconf.type == "number"){
@@ -68,7 +70,7 @@
             } else {
                 return;
             }
-            comp.attr("id", this.compid);
+            comp.attr("id", cconf.id || this.compid);
             if (cconf.hasOwnProperty("size")){
                 comp.attr("size", cconf.size);
             }
@@ -92,8 +94,27 @@
     }
 
     function setup(config){
+        function getComp(itemid){
+            return $("#" + itemid + "_cmp");
+        }
+        function getItem(itemid){
+            var findItem;
+            $.each(this.tabs, function(idx, tab){
+                var item = tab.getItem(itemid);
+                if (item){
+                    findItem = item;
+                    return false;
+                }
+            });
+            return findItem;
+        }
+        function save(){
+        }
         var that = {
             tabs: [],
+            save: save,
+            getComp: getComp,
+            getItem: getItem
         };
 
         var selector = config.selector || "#comfog-container";
@@ -136,18 +157,43 @@
                 }
                 if (itemconfig.comp){
                     var comp = itemObj.createComp();
-                    if (comp.parent().length > 0){
+                    if (comp && comp.parent().length > 0){
                         itemJQ.append(comp.parent());
                     } else {
                         itemJQ.append(comp);
                     }
                 }
+                if (itemconfig.add_comps){
+                    itemObj.comps = [];
+                    $.each(itemconfig.add_comps, function(idx3, acomp){
+
+                        var subcomp = itemObj.createComp(acomp);
+                        if (subcomp && subcomp.parent().length > 0){
+                            itemJQ.append(subcomp.parent());
+                        } else {
+                            itemJQ.append(subcomp);
+                        }
+                        itemObj.comps.push(subcomp);
+                    });
+                }
+                if (itemconfig.visible === false){
+                    itemJQ.css("display", "none");
+                }
                 tabJQ.append(itemJQ);
             });
         });
         $("a:first", nav).tab("show");
-        return that;
 
+
+        if (config.listeners){
+            if (config.listeners.load){
+                setTimeout(function(){
+                    config.listeners.load(that);
+                }, 1);
+            }
+        }
+
+        return that;
     }
     exports.comfog.setup = setup;
 })(this);
