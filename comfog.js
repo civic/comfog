@@ -29,6 +29,7 @@
         this.id = itemconfig.id;
         this.compid = itemconfig.id + "_cmp";
         this.config = $.extend(itemconfig);
+        this.config.save = this.config.save || true;
     }
     ItemObject.prototype = {
         getJQ: function(){
@@ -109,6 +110,13 @@
             return findItem;
         }
         function save(){
+            $.each(this.tabs, function(i, tab){
+                $.each(tab.items, function(j, item){
+                    if (item.config.save){
+                        localStorage[item.id] = item.getValue();
+                    }
+                });
+            });
         }
         var that = {
             tabs: [],
